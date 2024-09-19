@@ -47,7 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Circulo.cs" />
-    <Compile Include="Ellipse.cs" />
+    <Compile Include="Elipse.cs" />
     <Compile Include="frmGrafico.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -56,10 +56,12 @@
     </Compile>
     <Compile Include="ListaSimples.cs" />
     <Compile Include="NoLista.cs" />
+    <Compile Include="Polilinha.cs" />
     <Compile Include="Ponto.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reta.cs" />
+    <Compile Include="Retangulo.cs" />
     <EmbeddedResource Include="frmGrafico.resx">
       <DependentUpon>frmGrafico.cs</DependentUpon>
     </EmbeddedResource>
@@ -89,10 +91,13 @@
   <ItemGroup />
   <ItemGroup>
     <Content Include="Icones\art.png" />
+    <Content Include="Icones\bin.png" />
+    <Content Include="Icones\broom.png" />
     <Content Include="Icones\circle.png" />
     <Content Include="Icones\ellipse.png" />
     <Content Include="Icones\exit.png" />
     <Content Include="Icones\file.png" />
+    <Content Include="Icones\hand.png" />
     <Content Include="Icones\line-segment.png" />
     <Content Include="Icones\nodes.png" />
     <Content Include="Icones\oval.png" />

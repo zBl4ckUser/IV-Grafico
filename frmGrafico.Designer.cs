@@ -41,6 +41,11 @@
             this.btnPolilinha = new System.Windows.Forms.ToolStripButton();
             this.btnCor = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.tbFigura = new System.Windows.Forms.ToolStripTextBox();
+            this.btnSelecionar = new System.Windows.Forms.ToolStripButton();
+            this.btnExcluir = new System.Windows.Forms.ToolStripButton();
+            this.btnLimpar = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.btnSair = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.stMensagem = new System.Windows.Forms.StatusStrip();
@@ -49,9 +54,9 @@
             this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
             this.dlgCor = new System.Windows.Forms.ColorDialog();
-            this.pbAreaDesenho = new System.Windows.Forms.PictureBox();
             this.dlgAbrir = new System.Windows.Forms.OpenFileDialog();
             this.dlgSalvar = new System.Windows.Forms.SaveFileDialog();
+            this.pbAreaDesenho = new System.Windows.Forms.PictureBox();
             this.toolStrip1.SuspendLayout();
             this.stMensagem.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbAreaDesenho)).BeginInit();
@@ -71,13 +76,17 @@
             this.btnPolilinha,
             this.btnCor,
             this.toolStripSeparator3,
+            this.tbFigura,
+            this.btnSelecionar,
+            this.btnExcluir,
+            this.btnLimpar,
+            this.toolStripSeparator4,
             this.btnSair,
             this.toolStripSeparator2});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(785, 25);
             this.toolStrip1.TabIndex = 0;
-            this.toolStrip1.Text = "s";
             // 
             // btnAbrir
             // 
@@ -179,6 +188,49 @@
             this.toolStripSeparator3.Name = "toolStripSeparator3";
             this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
             // 
+            // tbFigura
+            // 
+            this.tbFigura.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.tbFigura.MaxLength = 1024;
+            this.tbFigura.Name = "tbFigura";
+            this.tbFigura.Size = new System.Drawing.Size(100, 25);
+            this.tbFigura.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.tbFigura_KeyPress);
+            // 
+            // btnSelecionar
+            // 
+            this.btnSelecionar.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnSelecionar.Image = ((System.Drawing.Image)(resources.GetObject("btnSelecionar.Image")));
+            this.btnSelecionar.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnSelecionar.Name = "btnSelecionar";
+            this.btnSelecionar.Size = new System.Drawing.Size(23, 22);
+            this.btnSelecionar.Text = "Selecionar figura";
+            this.btnSelecionar.Click += new System.EventHandler(this.btnSelecionar_Click);
+            // 
+            // btnExcluir
+            // 
+            this.btnExcluir.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnExcluir.Image = ((System.Drawing.Image)(resources.GetObject("btnExcluir.Image")));
+            this.btnExcluir.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnExcluir.Name = "btnExcluir";
+            this.btnExcluir.Size = new System.Drawing.Size(23, 22);
+            this.btnExcluir.Text = "Excluir figuras selecionada";
+            this.btnExcluir.Click += new System.EventHandler(this.btnExcluir_Click);
+            // 
+            // btnLimpar
+            // 
+            this.btnLimpar.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnLimpar.Image = global::Grafico.Properties.Resources.broom;
+            this.btnLimpar.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnLimpar.Name = "btnLimpar";
+            this.btnLimpar.Size = new System.Drawing.Size(23, 22);
+            this.btnLimpar.Text = "Limpar figuras";
+            this.btnLimpar.Click += new System.EventHandler(this.btnLimpar_Click);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
+            // 
             // btnSair
             // 
             this.btnSair.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -205,7 +257,6 @@
             this.stMensagem.Name = "stMensagem";
             this.stMensagem.Size = new System.Drawing.Size(785, 22);
             this.stMensagem.TabIndex = 1;
-            this.stMensagem.Text = "statusStrip1";
             // 
             // toolStripStatusLabel1
             // 
@@ -233,23 +284,32 @@
             this.toolStripStatusLabel4.Size = new System.Drawing.Size(25, 17);
             this.toolStripStatusLabel4.Text = "x, y";
             // 
+            // dlgAbrir
+            // 
+            this.dlgAbrir.DefaultExt = "txt";
+            this.dlgAbrir.FileName = "figuras";
+            this.dlgAbrir.Filter = "Arquivos de texto|*.txt";
+            this.dlgAbrir.Title = "Abrir arquivo de figuras";
+            // 
+            // dlgSalvar
+            // 
+            this.dlgSalvar.CheckFileExists = true;
+            this.dlgSalvar.DefaultExt = "txt";
+            this.dlgSalvar.FileName = "figuras";
+            this.dlgSalvar.Title = "Salvar arquivo de figuras ";
+            // 
             // pbAreaDesenho
             // 
-            this.pbAreaDesenho.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.pbAreaDesenho.Location = new System.Drawing.Point(0, 28);
+            this.pbAreaDesenho.BackColor = System.Drawing.SystemColors.ControlDark;
+            this.pbAreaDesenho.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pbAreaDesenho.Location = new System.Drawing.Point(0, 25);
             this.pbAreaDesenho.Name = "pbAreaDesenho";
-            this.pbAreaDesenho.Size = new System.Drawing.Size(785, 397);
+            this.pbAreaDesenho.Size = new System.Drawing.Size(785, 403);
             this.pbAreaDesenho.TabIndex = 2;
             this.pbAreaDesenho.TabStop = false;
             this.pbAreaDesenho.Paint += new System.Windows.Forms.PaintEventHandler(this.pbAreaDesenho_Paint);
             this.pbAreaDesenho.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pbAreaDesenho_MouseClick);
             this.pbAreaDesenho.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pbAreaDesenho_MouseMove);
-            // 
-            // dlgAbrir
-            // 
-            this.dlgAbrir.FileName = "openFileDialog1";
             // 
             // frmGrafico
             // 
@@ -261,6 +321,7 @@
             this.Controls.Add(this.toolStrip1);
             this.Name = "frmGrafico";
             this.Text = "Desenho Geométrico";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmGrafico_FormClosing);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             this.stMensagem.ResumeLayout(false);
@@ -296,6 +357,11 @@
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel3;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel4;
+        private System.Windows.Forms.ToolStripButton btnSelecionar;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.ToolStripButton btnLimpar;
+        private System.Windows.Forms.ToolStripTextBox tbFigura;
+        private System.Windows.Forms.ToolStripButton btnExcluir;
     }
 }
 

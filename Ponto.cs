@@ -20,7 +20,6 @@ namespace Grafico
             get { return x; }
             set 
             {
-                // TODO: verificar se é positivo ou não
                 if(value >= 0)
                 {
                     x = value;
@@ -36,7 +35,6 @@ namespace Grafico
             get { return y; }
             set
             {
-               // TODO: verificar se é positivo ou não
                if(value >= 0)
                 {
                     y = value;
@@ -54,10 +52,17 @@ namespace Grafico
             set { cor = value; }
         }
 
+
         public virtual void Desenhar(Color cor, Graphics g)
         {
-            Pen pen = new Pen(cor);
-            g.DrawLine(pen, x, y, x, y);
+            Pen pen = new Pen(cor); // a espessura padrão da caneta é '1'
+            g.DrawEllipse(pen, x, y, 10, 10); 
+        }
+
+        public virtual void Desenhar(Color cor, Graphics g, int width)
+        {
+            Pen pen = new Pen(cor, width); //espessura custom, vai ser usado na hora de selecionar a figura
+            g.DrawEllipse(pen, x, y, 10, 10);
         }
 
         public int CompareTo(Ponto other)
@@ -92,7 +97,6 @@ namespace Grafico
             transformaString(Cor.R, 5) +
             transformaString(Cor.G, 5) +
             transformaString(Cor.B, 5);
-
         }
     }
 }

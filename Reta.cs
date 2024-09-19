@@ -42,5 +42,11 @@ namespace Grafico
             g.DrawLine(pen, base.X, base.Y, // ponto inicial
             pontoFinal.X, pontoFinal.Y);
         }
+        public override void Desenhar(Color corDesenho, Graphics g, int width)
+        {
+            Pen pen = new Pen(corDesenho, width);
+            g.DrawLine(pen, base.X, base.Y, // ponto inicial
+            pontoFinal.X, pontoFinal.Y);
+        }
     }
 }

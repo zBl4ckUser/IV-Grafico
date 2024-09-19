@@ -12,19 +12,42 @@ namespace Grafico
             InitializeComponent();
         }
 
-        bool foiSalvo = true; // Se as operações feitas foram salvas no arquivo
-        bool esperaPonto = false;
-        bool esperaInicioReta = false;
-        bool esperaFimReta = false;
-        
+
+
+
         private ListaSimples<Ponto> figuras = new ListaSimples<Ponto>();
+        private ListaSimples<Ponto> figurasSelecionadas = new ListaSimples<Ponto>();
+        private Ponto p1 = new Ponto(0, 0, Color.Black);
+
+        const string numbers = "0123456789";
+        private bool foiSalvo = true; // Se as operações feitas foram salvas no arquivo
+        private bool esperaPonto = false;
+        private bool esperaInicioReta = false;
+        private bool esperaFimReta = false;
+        private bool esperaCentroCirculo = false;
+        private bool esperaRaioCirculo = false;
+        private bool esperaCentroElipse = false;
+        private bool esperaRaio0Elipse = false;
+        private bool esperaRaio1Elipse = false;
+        private bool esperaInicioRetangulo = false;
+        private bool esperaFimRetangulo = false;
         Color corAtual = Color.Black;
+        private int raio0;
+
+
 
         private void LimparEsperas()
         {
             esperaPonto = false;
             esperaInicioReta = false;
             esperaFimReta = false;
+            esperaCentroCirculo = false;
+            esperaRaioCirculo = false;
+            esperaCentroElipse = false;
+            esperaRaio0Elipse = false;
+            esperaRaio1Elipse = false;
+            esperaInicioRetangulo = false;
+            esperaFimRetangulo = false;
         }
 
         private void pbAreaDesenho_Paint(object sender, PaintEventArgs e)
@@ -45,7 +68,6 @@ namespace Grafico
                 {
                     StreamReader arqFiguras = new StreamReader(dlgAbrir.FileName);
                     String linha = arqFiguras.ReadLine();
-
                     Double xInfEsq = Convert.ToDouble(linha.Substring(0, 5).Trim());
                     Double yInfEsq = Convert.ToDouble(linha.Substring(5, 5).Trim());
                     Double xSupDir = Convert.ToDouble(linha.Substring(10, 5).Trim());
@@ -76,11 +98,19 @@ namespace Grafico
                                 int raio = Convert.ToInt32(linha.Substring(30, 5).Trim());
                                 figuras.InserirAposFim(new Circulo(xBase, yBase, raio, cor));
                                 break;
-                            case 'e':
+                            case 'e': // figura é uma elipse
                                 int raio0 = Convert.ToInt32(linha.Substring(30, 5).Trim());
                                 int raio1 = Convert.ToInt32(linha.Substring(35, 5).Trim());
-                                figuras.InserirAposFim(new Ellipse(xBase, yBase, raio0, raio1, cor));
+                                figuras.InserirAposFim(new Elipse(xBase, yBase, raio0, raio1, cor));
                                 break;
+                            case 'r': // figura é uma reta
+                                int width = Convert.ToInt32(linha.Substring(30, 5).Trim());
+                                int height = Convert.ToInt32(linha.Substring(35, 5).Trim());
+                                figuras.InserirAposFim(new Retangulo(xBase, yBase, width, height, cor));
+                                break;
+                            case 'm': // figura é uma polilinha
+                                break;
+
                         }
                     }
 
@@ -89,15 +119,43 @@ namespace Grafico
                     pbAreaDesenho.Invalidate();
 
                 }
-                catch (IOException)
+                catch (IOException ex)
                 {
-                    Console.WriteLine("Erro de leitura no arquivo");
+                    MessageBox.Show($"Ocorreu um erro durante a leitura do arquivo.", "Erro");
+                    Console.WriteLine($"Erro de leitura no arquivo. \n {ex.Message}");
+                }
+                catch (FormatException ex)
+                {
+                    MessageBox.Show($"Houve um erro ao ler o arquivo. {ex.Message}", "Erro");
+                    Console.WriteLine($"Erro de formato nos dados do arquivo.\nMensagem:{ex.Message}");
                 }
         }
 
         private void btnSalvar_Click(object sender, EventArgs e)
         {
-
+            if (dlgSalvar.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    StreamWriter writer = new StreamWriter(dlgSalvar.FileName);
+                    Graphics g = pbAreaDesenho.CreateGraphics(); // cria os gráficos para esse controlador
+                    // Variáveis que representam o limite da imagem
+                    int xInfEsq = 0, yInfEsq = 0, width = pbAreaDesenho.Width, height = pbAreaDesenho.Height;
+                    writer.WriteLine($"{xInfEsq,5}{yInfEsq,5}{width,5}{height,5}");
+                    figuras.IniciarPercursoSequencial();
+                    while (figuras.PodePercorrer())
+                    {
+                        Ponto figuraAtual = figuras.Atual.Info;
+                        writer.WriteLine(figuraAtual);
+                    }
+                    writer.Close();
+                    foiSalvo = true;
+                }
+                catch (IOException ex)
+                {
+                    MessageBox.Show($"Ocorreu um erro ao salvar o arquivo {ex.Message}");
+                }
+            }
         }
 
         private void btnPonto_Click(object sender, EventArgs e)
@@ -109,22 +167,30 @@ namespace Grafico
 
         private void btnReta_Click(object sender, EventArgs e)
         {
-
+            stMensagem.Items[1].Text = "clique no local do inicío da reta:";
+            LimparEsperas();
+            esperaInicioReta = true;
         }
 
         private void btnCirculo_Click(object sender, EventArgs e)
         {
-
+            stMensagem.Items[1].Text = "clique no local do centro do círculo:";
+            LimparEsperas();
+            esperaCentroCirculo = true;
         }
 
         private void btnEllipse_Click(object sender, EventArgs e)
         {
-
+            stMensagem.Items[1].Text = "clique no local do centro da elipse:";
+            LimparEsperas();
+            esperaCentroElipse = true;
         }
 
         private void btnRetangulo_Click(object sender, EventArgs e)
         {
-
+            stMensagem.Items[1].Text = "clique no ponto vertical do retângulo desejado";
+            LimparEsperas();
+            esperaInicioRetangulo = true;
         }
 
         private void btnPolilinha_Click(object sender, EventArgs e)
@@ -134,12 +200,23 @@ namespace Grafico
 
         private void btnCor_Click(object sender, EventArgs e)
         {
-
+            dlgCor.ShowDialog();
+            corAtual = dlgCor.Color;
+            if (!figurasSelecionadas.EstaVazia)
+            {
+                NoLista<Ponto> atual = figurasSelecionadas.Primeiro;
+                while (atual != null)
+                {
+                    atual.Info.Desenhar(corAtual, pbAreaDesenho.CreateGraphics(), 1);
+                    atual = atual.Prox;
+                }
+            }
         }
+
 
         private void btnSair_Click(object sender, EventArgs e)
         {
-
+            Close();
         }
 
         private void pbAreaDesenho_MouseMove(object sender, MouseEventArgs e)
@@ -147,9 +224,12 @@ namespace Grafico
             stMensagem.Items[3].Text = e.X + "," + e.Y;
         }
 
-        private void pbAreaDesenho_Click(object sender, EventArgs e)
+        private int CalcRaio(int x1, int x2, int y1, int y2)
         {
-            
+            int a = x1 - x2;
+            int b = y1 - y2;
+
+            return Convert.ToInt32(Math.Sqrt(a * a + b * b));
         }
 
         private void pbAreaDesenho_MouseClick(object sender, MouseEventArgs e)
@@ -160,8 +240,200 @@ namespace Grafico
                 figuras.InserirAposFim(novoPonto);
                 novoPonto.Desenhar(novoPonto.Cor, pbAreaDesenho.CreateGraphics());
                 esperaPonto = false;
-                stMensagem.Items[1].Text = "";
+                stMensagem.Items[1].Text = "sem mensagem";
+                pbAreaDesenho.Invalidate();
+                foiSalvo = false;
+                return;
             }
+            if (esperaInicioReta)
+            {
+                p1.Cor = corAtual;
+                p1.X = e.X;
+                p1.Y = e.Y;
+                esperaInicioReta = false;
+                esperaFimReta = true;
+                stMensagem.Items[1].Text = ("clique o ponto final da reta");
+                return;
+            }
+            if (esperaFimReta)
+            {
+                Reta reta = new Reta(p1.X, p1.Y, e.X, e.Y, corAtual);
+                figuras.InserirAposFim(reta);
+                reta.Desenhar(reta.Cor, pbAreaDesenho.CreateGraphics());
+
+                esperaFimReta = false;
+                stMensagem.Items[1].Text = "sem mensagem";
+                pbAreaDesenho.Invalidate();
+                foiSalvo = false;
+                return;
+            }
+            if (esperaCentroCirculo)
+            {
+                p1.Cor = corAtual;
+                p1.X = e.X;
+                p1.Y = e.Y;
+                esperaCentroCirculo = false;
+                esperaRaioCirculo = true;
+                stMensagem.Items[1].Text = ("clique onde será o raio do círculo");
+                return;
+            }
+            if (esperaRaioCirculo)
+            {
+                int raio = CalcRaio(p1.X, e.X, p1.Y, e.Y);
+                Circulo circ = new Circulo(p1.X, p1.Y, raio, corAtual);
+                figuras.InserirAposFim(circ);
+                circ.Desenhar(circ.Cor, pbAreaDesenho.CreateGraphics());
+
+                stMensagem.Items[1].Text = "sem mensagem";
+                pbAreaDesenho.Invalidate();
+                esperaRaioCirculo = false;
+                foiSalvo = false;
+                return;
+            }
+            if (esperaCentroElipse)
+            {
+                p1.Cor = corAtual;
+                p1.X = e.X;
+                p1.Y = e.Y;
+                esperaCentroElipse = false;
+                esperaRaio0Elipse = true;
+                stMensagem.Items[1].Text = ("clique onde será o primeiro raio da elipse");
+                return;
+            }
+            if (esperaRaio0Elipse)
+            {
+                raio0 = CalcRaio(p1.X, e.X, p1.Y, e.Y);
+                esperaRaio0Elipse = false;
+                esperaRaio1Elipse = true;
+                stMensagem.Items[1].Text = ("clique onde será o segundo raio da elipse");
+                return;
+            }
+            if (esperaRaio1Elipse)
+            {
+                int raio1 = CalcRaio(p1.X, e.X, p1.Y, e.Y);
+                Elipse elipse = new Elipse(p1.X, p1.Y, raio0, raio1, p1.Cor);
+                figuras.InserirAposFim(elipse);
+                elipse.Desenhar(elipse.Cor, pbAreaDesenho.CreateGraphics());
+                esperaRaio1Elipse = false;
+                stMensagem.Items[1].Text = "sem mensagem";
+                pbAreaDesenho.Invalidate();
+                foiSalvo = false;
+                return;
+            }
+            if (esperaInicioRetangulo)
+            {
+                p1.Cor = corAtual;
+                p1.X = e.X;
+                p1.Y = e.Y;
+                esperaInicioRetangulo = false;
+                esperaFimRetangulo = true;
+                stMensagem.Items[1].Text = ("clique o ponto horizontal do retângulo");
+                return;
+
+            }
+            if (esperaFimRetangulo)
+            {
+
+                int aux, x = e.X, y = e.Y;
+                if (e.X < p1.X) { aux = p1.X; p1.X = e.X; x = aux; }
+                if (e.Y < p1.Y) { aux = p1.Y; p1.Y = e.Y; y = aux; }
+
+                int width = x - p1.X;
+                int height = y - p1.Y;
+
+
+                Console.WriteLine($"{p1.X}, {p1.Y}, {e.X}, {e.Y}");
+                Retangulo retangulo = new Retangulo(p1.X, p1.Y, width, height, corAtual);
+                figuras.InserirAposFim(retangulo);
+                retangulo.Desenhar(retangulo.Cor, pbAreaDesenho.CreateGraphics());
+                esperaFimRetangulo = false;
+                stMensagem.Items[1].Text = "sem mensagem";
+                pbAreaDesenho.Invalidate();
+                foiSalvo = false;
+                return;
+            }
+
+        }
+
+        private void frmGrafico_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!foiSalvo)
+            {
+                var msgBox = MessageBox.Show("Você tem formas que não foram salvas.\n Desejas salvar o seu trabalho?",
+                        "Trabalho não salvo", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                if (msgBox == DialogResult.Yes)
+                {
+                    btnSalvar_Click(sender, e);
+                }
+                if (msgBox == DialogResult.Cancel)
+                {
+                    e.Cancel = true; // Cancela o fechamento do form
+                }
+            }
+        }
+
+        private void btnLimpar_Click(object sender, EventArgs e)
+        {
+            var confirmacao = MessageBox.Show("Você tem certeza que quer limpar todas as figuras?", "Deseja limpar a tela?", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (confirmacao == DialogResult.Yes)
+            {
+                figuras = new ListaSimples<Ponto>();
+                figurasSelecionadas = new ListaSimples<Ponto>();
+                p1 = new Ponto(0, 0, corAtual);
+                pbAreaDesenho.Invalidate();
+                foiSalvo = true;
+                LimparEsperas();
+                // O Garbage Collector do C# vai fazer o trabalho de desalocar os objetos da lista antiga
+            }
+            return;
+        }
+
+        private void tbFigura_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!numbers.Contains(Convert.ToString(e.KeyChar)) &&
+                    e.KeyChar != (char)Keys.Back)
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void btnSelecionar_Click(object sender, EventArgs e)
+        {
+            
+            if(tbFigura.Text.Length > 0)
+            {
+                int contador = 0;
+                NoLista<Ponto> atual = figuras.Primeiro;
+                while (atual != null)
+                {
+                    if (contador == Convert.ToInt32(tbFigura.Text))
+                    {
+                        atual.Info.Desenhar(Color.Red, pbAreaDesenho.CreateGraphics(), 2);
+                        figurasSelecionadas.InserirAposFim(atual.Info);
+                        tbFigura.Clear();
+                        return;
+                    }
+                    contador++;
+                    atual = atual.Prox;
+                }
+            }
+            else
+            {
+                MessageBox.Show("Insira o índice da figura na caixa de texto", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void btnExcluir_Click(object sender, EventArgs e)
+        {
+            NoLista<Ponto> atual = figurasSelecionadas.Primeiro;
+            while (atual != null)
+            {
+                figuras.Remover(atual.Info);
+                atual = atual.Prox;
+            }
+            figurasSelecionadas = new ListaSimples<Ponto>();
+            pbAreaDesenho.Invalidate();
+            foiSalvo = false;
         }
     }
 }

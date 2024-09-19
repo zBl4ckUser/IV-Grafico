@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 namespace Grafico
 {
     class Circulo : Ponto
@@ -20,6 +21,24 @@ namespace Grafico
             Pen pen = new Pen(corDesenho);
             g.DrawEllipse(pen, base.X - raio, base.Y - raio, // centro - raio
             2 * raio, 2 * raio); // centro + raio
+        }
+
+        public override void Desenhar(Color corDesenho, Graphics g, int width)
+        {
+            Pen pen = new Pen(corDesenho, width);
+            g.DrawEllipse(pen, base.X - raio, base.Y - raio, // centro - raio
+            2 * raio, 2 * raio); // centro + raio
+        }
+
+        public override String ToString()
+        {
+            return transformaString("c", 5) +
+            transformaString(X, 5) +
+            transformaString(Y, 5) +
+            transformaString(Cor.R, 5) +
+            transformaString(Cor.G, 5) +
+            transformaString(Cor.B, 5) +
+            transformaString(raio, 5);
         }
     }
 }
