@@ -12,16 +12,7 @@ namespace Grafico
     {
         private Ponto pontoFinal;
 
-        public int InicialX 
-        {
-            get { return base.X; } 
-            set { base.X = value; } 
-        }
-        public int InicialY
-        {
-            get { return base.Y; }
-            set { base.Y = value; }
-        }
+        
         public int FinalX
         {
             get { return pontoFinal.X; }
@@ -47,6 +38,18 @@ namespace Grafico
             Pen pen = new Pen(corDesenho, width);
             g.DrawLine(pen, base.X, base.Y, // ponto inicial
             pontoFinal.X, pontoFinal.Y);
+        }
+
+        public override String ToString()
+        {
+            return transformaString("l", 5) +
+            transformaString(X, 5) +
+            transformaString(Y, 5) +
+            transformaString(Cor.R, 5) +
+            transformaString(Cor.G, 5) +
+            transformaString(Cor.B, 5) +
+            transformaString(FinalX, 5) +
+            transformaString(FinalY, 5);
         }
     }
 }

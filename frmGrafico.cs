@@ -12,12 +12,10 @@ namespace Grafico
             InitializeComponent();
         }
 
-
-
-
         private ListaSimples<Ponto> figuras = new ListaSimples<Ponto>();
         private ListaSimples<Ponto> figurasSelecionadas = new ListaSimples<Ponto>();
         private Ponto p1 = new Ponto(0, 0, Color.Black);
+        private Polilinha polilinhaBase;
 
         const string numbers = "0123456789";
         private bool foiSalvo = true; // Se as operações feitas foram salvas no arquivo
@@ -33,8 +31,8 @@ namespace Grafico
         private bool esperaFimRetangulo = false;
         Color corAtual = Color.Black;
         private int raio0;
-
-
+        private bool esperaInicioPolilinha = false;
+        private bool esperaFimPolilinha;
 
         private void LimparEsperas()
         {
@@ -48,6 +46,8 @@ namespace Grafico
             esperaRaio1Elipse = false;
             esperaInicioRetangulo = false;
             esperaFimRetangulo = false;
+            esperaInicioPolilinha = false;
+            esperaFimPolilinha = false;
         }
 
         private void pbAreaDesenho_Paint(object sender, PaintEventArgs e)
@@ -59,10 +59,27 @@ namespace Grafico
                 Ponto figuraAtual = figuras.Atual.Info;
                 figuraAtual.Desenhar(figuraAtual.Cor, g);
             }
+
+            figurasSelecionadas.IniciarPercursoSequencial();
+            while (figurasSelecionadas.PodePercorrer())
+            {
+                Ponto figuraSelecionadaAtual = figurasSelecionadas.Atual.Info;
+                figuraSelecionadaAtual.Desenhar(Color.Red, g);
+            }
         }
 
         private void btnAbrir_Click(object sender, EventArgs e)
         {
+            if (!foiSalvo)
+            {
+                var confirmacao = MessageBox.Show("Tens trabalho não salvo. Você tem certeza que quer abrir um novo arquivo?",
+                        "Trabalho não salvo", MessageBoxButtons.YesNo);
+                if(confirmacao == DialogResult.No)
+                {
+                    return;
+                }
+            }
+
             if (dlgAbrir.ShowDialog() == DialogResult.OK)
                 try
                 {
@@ -75,14 +92,12 @@ namespace Grafico
                     while ((linha = arqFiguras.ReadLine()) != null)
                     {
                         String tipo = linha.Substring(0, 5).Trim();
-
                         int xBase = Convert.ToInt32(linha.Substring(5, 5).Trim());
                         int yBase = Convert.ToInt32(linha.Substring(10, 5).Trim());
                         int corR = Convert.ToInt32(linha.Substring(15, 5).Trim());
                         int corG = Convert.ToInt32(linha.Substring(20, 5).Trim());
                         int corB = Convert.ToInt32(linha.Substring(25, 5).Trim());
-                        Color cor = new Color();
-                        cor = Color.FromArgb(255, corR, corG, corB);
+                        Color cor = Color.FromArgb(255, corR, corG, corB);
                         switch (tipo[0])
                         {
 
@@ -109,9 +124,20 @@ namespace Grafico
                                 figuras.InserirAposFim(new Retangulo(xBase, yBase, width, height, cor));
                                 break;
                             case 'm': // figura é uma polilinha
+                                if (polilinhaBase == null)
+                                { 
+                                    polilinhaBase = new Polilinha(xBase, yBase, cor); 
+                                }
+                                polilinhaBase.AdicionarPonto(new Ponto(xBase, yBase, cor));
                                 break;
 
                         }
+                    }
+
+                    if (polilinhaBase != null)
+                    {
+                        figuras.InserirAposFim(polilinhaBase);
+                        polilinhaBase = null;
                     }
 
                     arqFiguras.Close();
@@ -129,6 +155,7 @@ namespace Grafico
                     MessageBox.Show($"Houve um erro ao ler o arquivo. {ex.Message}", "Erro");
                     Console.WriteLine($"Erro de formato nos dados do arquivo.\nMensagem:{ex.Message}");
                 }
+            foiSalvo = true;
         }
 
         private void btnSalvar_Click(object sender, EventArgs e)
@@ -138,7 +165,6 @@ namespace Grafico
                 try
                 {
                     StreamWriter writer = new StreamWriter(dlgSalvar.FileName);
-                    Graphics g = pbAreaDesenho.CreateGraphics(); // cria os gráficos para esse controlador
                     // Variáveis que representam o limite da imagem
                     int xInfEsq = 0, yInfEsq = 0, width = pbAreaDesenho.Width, height = pbAreaDesenho.Height;
                     writer.WriteLine($"{xInfEsq,5}{yInfEsq,5}{width,5}{height,5}");
@@ -195,7 +221,19 @@ namespace Grafico
 
         private void btnPolilinha_Click(object sender, EventArgs e)
         {
-
+            if (esperaFimPolilinha)
+            {
+                stMensagem.Items[1].Text = "sem mensagem";
+                LimparEsperas();
+                figuras.InserirAposFim(polilinhaBase);
+                polilinhaBase = null;
+            }
+            else
+            {
+                stMensagem.Items[1].Text = "Clique no primeiro ponto do polilinha";
+                LimparEsperas();
+                esperaInicioPolilinha = true;
+            }
         }
 
         private void btnCor_Click(object sender, EventArgs e)
@@ -213,7 +251,6 @@ namespace Grafico
             }
         }
 
-
         private void btnSair_Click(object sender, EventArgs e)
         {
             Close();
@@ -229,9 +266,8 @@ namespace Grafico
             int a = x1 - x2;
             int b = y1 - y2;
 
-            return Convert.ToInt32(Math.Sqrt(a * a + b * b));
+            return (int)Math.Sqrt(a * a + b * b);
         }
-
         private void pbAreaDesenho_MouseClick(object sender, MouseEventArgs e)
         {
             if (esperaPonto)
@@ -333,22 +369,38 @@ namespace Grafico
             }
             if (esperaFimRetangulo)
             {
-
                 int aux, x = e.X, y = e.Y;
                 if (e.X < p1.X) { aux = p1.X; p1.X = e.X; x = aux; }
                 if (e.Y < p1.Y) { aux = p1.Y; p1.Y = e.Y; y = aux; }
-
                 int width = x - p1.X;
                 int height = y - p1.Y;
 
-
-                Console.WriteLine($"{p1.X}, {p1.Y}, {e.X}, {e.Y}");
                 Retangulo retangulo = new Retangulo(p1.X, p1.Y, width, height, corAtual);
                 figuras.InserirAposFim(retangulo);
                 retangulo.Desenhar(retangulo.Cor, pbAreaDesenho.CreateGraphics());
                 esperaFimRetangulo = false;
                 stMensagem.Items[1].Text = "sem mensagem";
                 pbAreaDesenho.Invalidate();
+                foiSalvo = false;
+                return;
+            }
+
+            if (esperaInicioPolilinha)
+            {
+                polilinhaBase = new Polilinha(e.X, e.Y, corAtual);
+                esperaInicioPolilinha = false;
+                esperaFimPolilinha = true;
+                stMensagem.Items[1].Text = "clique no próximo ponto do polilinha | Clique no botão de polilinha para finalizar a polilinha";
+                return;
+            }
+            if (esperaFimPolilinha)
+            {
+                Ponto p = new Ponto(e.X, e.Y, corAtual);
+
+                polilinhaBase.AdicionarPonto(p);
+                polilinhaBase.Desenhar(p.Cor, pbAreaDesenho.CreateGraphics()); // Assim 
+                    //ou
+                polilinhaBase.Desenhar(polilinhaBase.Cor, pbAreaDesenho.CreateGraphics()); // Assim?
                 foiSalvo = false;
                 return;
             }
@@ -399,8 +451,8 @@ namespace Grafico
 
         private void btnSelecionar_Click(object sender, EventArgs e)
         {
-            
-            if(tbFigura.Text.Length > 0)
+
+            if (tbFigura.Text.Length > 0)
             {
                 int contador = 0;
                 NoLista<Ponto> atual = figuras.Primeiro;
@@ -416,6 +468,7 @@ namespace Grafico
                     contador++;
                     atual = atual.Prox;
                 }
+                tbFigura.Clear();
             }
             else
             {

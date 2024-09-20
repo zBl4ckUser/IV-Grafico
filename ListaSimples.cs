@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
 
-//, ICriterioDeSeparacao<Dado>
-
 public class ListaSimples<Dado>
              where Dado : IComparable<Dado>
 {
