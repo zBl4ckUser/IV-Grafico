@@ -293,10 +293,10 @@
             // 
             // dlgSalvar
             // 
-            this.dlgSalvar.CheckFileExists = true;
             this.dlgSalvar.DefaultExt = "txt";
             this.dlgSalvar.FileName = "figuras";
             this.dlgSalvar.Filter = "Arquivos de texto|*.txt";
+            this.dlgSalvar.OverwritePrompt = false;
             this.dlgSalvar.Title = "Salvar arquivo de figuras ";
             // 
             // pbAreaDesenho

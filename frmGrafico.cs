@@ -1,4 +1,9 @@
-﻿using System;
+﻿/*
+ Pedro Henrique Vieira de Souza    RA: 23153
+ Yasmin Victoria Lopes da da Silva RA: 23582
+ */
+
+using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -50,6 +55,19 @@ namespace Grafico
             esperaFimPolilinha = false;
         }
 
+        private void AtivaBotoesPorPolilinha(bool habilitado)
+        {
+            btnPonto.Enabled = habilitado;
+            btnReta.Enabled = habilitado;
+            btnCirculo.Enabled = habilitado;
+            btnEllipse.Enabled = habilitado;
+            btnRetangulo.Enabled = habilitado;
+            btnSalvar.Enabled = habilitado;
+            btnSelecionar.Enabled = habilitado;
+            btnCor.Enabled = habilitado;
+            btnExcluir.Enabled = habilitado;
+        }
+
         private void pbAreaDesenho_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics; // acessa contexto gráfico
@@ -64,25 +82,28 @@ namespace Grafico
             while (figurasSelecionadas.PodePercorrer())
             {
                 Ponto figuraSelecionadaAtual = figurasSelecionadas.Atual.Info;
-                figuraSelecionadaAtual.Desenhar(Color.Red, g);
+                figuraSelecionadaAtual.Desenhar(Color.Red, g, 2);
             }
         }
 
         private void btnAbrir_Click(object sender, EventArgs e)
         {
-            if (!foiSalvo)
+            if (!foiSalvo) // verifica se tem algum trabalho não salvo
             {
                 var confirmacao = MessageBox.Show("Tens trabalho não salvo. Você tem certeza que quer abrir um novo arquivo?",
                         "Trabalho não salvo", MessageBoxButtons.YesNo);
                 if(confirmacao == DialogResult.No)
                 {
-                    return;
+                    return; // se não quiser abrir, apenas sai da função. 
                 }
             }
 
             if (dlgAbrir.ShowDialog() == DialogResult.OK)
                 try
                 {
+                    LimparEsperas();
+                    figuras = new ListaSimples<Ponto>();
+                    figurasSelecionadas = new ListaSimples<Ponto>();
                     StreamReader arqFiguras = new StreamReader(dlgAbrir.FileName);
                     String linha = arqFiguras.ReadLine();
                     Double xInfEsq = Convert.ToDouble(linha.Substring(0, 5).Trim());
@@ -124,7 +145,7 @@ namespace Grafico
                                 figuras.InserirAposFim(new Retangulo(xBase, yBase, width, height, cor));
                                 break;
                             case 'm': // figura é uma polilinha
-                                if (polilinhaBase == null)
+                                if (polilinhaBase == null) // se ainda não existir o polilinhaBase
                                 { 
                                     polilinhaBase = new Polilinha(xBase, yBase, cor); 
                                 }
@@ -141,7 +162,7 @@ namespace Grafico
                     }
 
                     arqFiguras.Close();
-                    this.Text = dlgAbrir.FileName;
+                    this.Text = dlgAbrir.FileName + "";
                     pbAreaDesenho.Invalidate();
 
                 }
@@ -152,7 +173,7 @@ namespace Grafico
                 }
                 catch (FormatException ex)
                 {
-                    MessageBox.Show($"Houve um erro ao ler o arquivo. {ex.Message}", "Erro");
+                    MessageBox.Show($"O arquivo não está no formato correto {ex.Message}", "Erro");
                     Console.WriteLine($"Erro de formato nos dados do arquivo.\nMensagem:{ex.Message}");
                 }
             foiSalvo = true;
@@ -160,6 +181,7 @@ namespace Grafico
 
         private void btnSalvar_Click(object sender, EventArgs e)
         {
+            dlgSalvar.FileName = dlgAbrir.FileName;
             if (dlgSalvar.ShowDialog() == DialogResult.OK)
             {
                 try
@@ -227,12 +249,14 @@ namespace Grafico
                 LimparEsperas();
                 figuras.InserirAposFim(polilinhaBase);
                 polilinhaBase = null;
+                AtivaBotoesPorPolilinha(true);
             }
             else
             {
                 stMensagem.Items[1].Text = "Clique no primeiro ponto do polilinha";
                 LimparEsperas();
                 esperaInicioPolilinha = true;
+                AtivaBotoesPorPolilinha(false);
             }
         }
 
@@ -433,8 +457,9 @@ namespace Grafico
                 figurasSelecionadas = new ListaSimples<Ponto>();
                 p1 = new Ponto(0, 0, corAtual);
                 pbAreaDesenho.Invalidate();
-                foiSalvo = true;
+                foiSalvo = false;
                 LimparEsperas();
+                AtivaBotoesPorPolilinha(true);
                 // O Garbage Collector do C# vai fazer o trabalho de desalocar os objetos da lista antiga
             }
             return;
@@ -442,6 +467,7 @@ namespace Grafico
 
         private void tbFigura_KeyPress(object sender, KeyPressEventArgs e)
         {
+            //Deixa inserir apenas números (para o índice) e backspace, para apagar o último char
             if (!numbers.Contains(Convert.ToString(e.KeyChar)) &&
                     e.KeyChar != (char)Keys.Back)
             {
@@ -461,7 +487,10 @@ namespace Grafico
                     if (contador == Convert.ToInt32(tbFigura.Text))
                     {
                         atual.Info.Desenhar(Color.Red, pbAreaDesenho.CreateGraphics(), 2);
-                        figurasSelecionadas.InserirAposFim(atual.Info);
+                        if (!figurasSelecionadas.ExisteDado(atual.Info))
+                        {
+                            figurasSelecionadas.InserirAposFim(atual.Info);
+                        }
                         tbFigura.Clear();
                         return;
                     }
